@@ -10,7 +10,6 @@ library(shiny)
 function(input, output, session) {
     
     statuses <- reactive({
-        print('statuses reactive run')
         # Change when the "update" button is pressed...
         input$update
         # ...but not for anything else

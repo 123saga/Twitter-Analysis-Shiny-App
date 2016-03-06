@@ -23,13 +23,6 @@ setup_twitter_oauth(secrets$api_key,
 
 # Grab tweets
 getTweets <- function(searchString, numTweets){
-    print('getTweets has been run')
-    
-    # Clear variable
-    if(exists("statuses")) {
-        rm(statuses)
-        print('old tweets deleted')
-    }
     
     st <- searchTwitter(searchString, n=numTweets, resultType = 'recent', lang = 'en')
     
@@ -44,8 +37,6 @@ getTweets <- function(searchString, numTweets){
     statuses <-
         statuses %>%
         filter(!RT)
-    
-    print(nrow(statuses))
     
     return(statuses)
 }
