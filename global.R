@@ -1,0 +1,108 @@
+# Global setups
+
+library(twitteR)
+library(tm)
+library(rjson)
+library(wordcloud)
+library(dplyr)
+library(caret)
+#library(knitr)
+library(RColorBrewer)
+library(stringr)
+library(syuzhet) # for sentiment analysis
+library(memoise)
+library(ggplot2)
+
+# Load twitter authorization
+secrets <- fromJSON(file='twitter_secrets.json.nogit')
+
+setup_twitter_oauth(secrets$api_key,
+                    secrets$api_secret,
+                    secrets$access_token,
+                    secrets$access_token_secret)
+
+# Grab tweets
+getTweets <- function(searchString, numTweets){
+    print('getTweets has been run')
+    
+    # Clear variable
+    if(exists("statuses")) {
+        rm(statuses)
+        print('old tweets deleted')
+    }
+    
+    st <- searchTwitter(searchString, n=numTweets, resultType = 'recent', lang = 'en')
+    
+    statuses <- data.frame(text=sapply(st, function(x) x$getText()),
+                           user=sapply(st, function(x) x$getScreenName()),
+                           RT=sapply(st, function(x) x$isRetweet),
+                           latitude=sapply(st, function(x) as.numeric(x$latitude[1])),
+                           longitude=sapply(st, function(x) as.numeric(x$longitude[1])),
+                           time=sapply(st, function(x) format(x$created, format='%F %T'))
+    )
+    
+    statuses <-
+        statuses %>%
+        filter(!RT)
+    
+    print(nrow(statuses))
+    
+    return(statuses)
+}
+
+# Grab text data
+getTextData <- function(statuses) {
+    # Gather corpus
+    textdata <- Corpus(VectorSource(statuses$text))
+    textdata <- 
+        textdata %>%
+        tm_map(removeWords, stopwords("english"), mc.cores=1) %>%
+        tm_map(removePunctuation, mc.cores=1) %>%
+        tm_map(content_transformer(function(x) iconv(x, to='UTF-8-MAC', sub='byte')),
+               mc.cores=1) %>%
+        tm_map(content_transformer(tolower), mc.cores=1) %>%
+        tm_map(content_transformer(function(x) str_replace_all(x, "@\\w+", "")), 
+               mc.cores=1) %>% # remove twitter handles
+        tm_map(removeNumbers, mc.cores=1) %>%
+        tm_map(stemDocument, mc.cores=1) %>%
+        tm_map(stripWhitespace, mc.cores=1)
+}
+
+# Get sentiment data
+getSentiments <- function(textdata){
+    sentiments <- sapply(textdata, function(x) get_nrc_sentiment(as.character(x)))
+    
+    sentiments <- as.data.frame(aperm(sentiments)) # transpose and save as dataframe
+    sentiments <- as.data.frame(lapply(sentiments, as.numeric)) # a bit more to organize
+    sentiments <-
+        sentiments %>%
+        mutate(positivity = positive - negative)
+}
+
+# Do the PCA analysis
+doPCA <- function(textdata, statuses, sentiments){
+    dtm <- DocumentTermMatrix(textdata)
+    dtm <- as.matrix(dtm) #inspect(dtm)
+    
+    words <- data.frame(term = colnames(dtm))
+    words$count <- colSums(dtm)
+    
+    words <-
+        words %>%
+        arrange(desc(count))
+    
+    tweets <- as.data.frame(dtm)
+    ind <- data.frame('id'=seq.int(nrow(tweets)))
+    tweets <- cbind(ind, tweets)
+    
+    words_100 <- as.character(words[2:101,'term'])
+    tweets <- tweets[,c('id',words_100)]
+    
+    trans <- preProcess(tweets[,2:ncol(tweets)], method=c("pca"), thresh = 0.95)
+    pca <- predict(trans, tweets[,2:ncol(tweets)])
+    statuses <- cbind(statuses, pca[,1:5], sentiments)
+    
+    return(statuses)
+}
+
+
