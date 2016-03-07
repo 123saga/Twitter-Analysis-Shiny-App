@@ -9,6 +9,8 @@ library(shiny)
 
 pcalist <- c('PC1','PC2','PC3','PC4','PC5')
 numChoices <- c(1000, 2000, 3000, 4000, 5000)
+colChoices <- c('positivity','anger','anticipation','disgust','fear','joy',
+                'sadness','surprise','trust')
 
 shinyUI(
     navbarPage("Twitter Analysis",
@@ -41,7 +43,8 @@ shinyUI(
                             sidebarPanel(
                                 selectInput('xvar', 'X Variable', pcalist),
                                 selectInput('yvar', 'Y Variable', pcalist,
-                                            selected=pcalist[2])
+                                            selected=pcalist[2]),
+                                selectInput('colvar','Color',colChoices, selected=colChoices[1])
                             ),
                             mainPanel(plotOutput("pcaplot"))
                         )),

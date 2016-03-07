@@ -62,7 +62,7 @@ function(input, output, session) {
     
     output$plot <- renderPlot({
         wordcloud_rep(textdata(), scale=c(4,0.5),
-                      min.freq = 15, max.words=100,
+                      min.freq=3, max.words=100,
                       colors=brewer.pal(8, "RdBu"), random.order=F, 
                       rot.per=0.1, use.r.layout=F)
     })
@@ -86,7 +86,7 @@ function(input, output, session) {
         df <- runpca()
 
         ggplot(df, aes_string(x=input$xvar, y=input$yvar)) + 
-            geom_point(aes(fill=positivity), size=4, alpha=0.7, pch=21, stroke=1.3) + 
+            geom_point(aes_string(fill=input$colvar), size=4, alpha=0.7, pch=21, stroke=1.3) + 
             scale_fill_gradientn(colours = brewer.pal(10,"RdBu"), limits=c(-5,5)) + theme_bw()
         
     })
