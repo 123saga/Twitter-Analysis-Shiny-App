@@ -87,7 +87,7 @@ function(input, output, session) {
 
         ggplot(df, aes_string(x=input$xvar, y=input$yvar)) + 
             geom_point(aes_string(fill=input$colvar), size=4, alpha=0.7, pch=21, stroke=1.3) + 
-            scale_fill_gradientn(colours = brewer.pal(10,"RdBu"), limits=c(-5,5)) + theme_bw()
+            scale_fill_gradientn(colours = brewer.pal(10,"RdBu")) + theme_bw()
         
     })
     
