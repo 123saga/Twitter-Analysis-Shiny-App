@@ -13,30 +13,48 @@ library(syuzhet) # for sentiment analysis
 library(memoise)
 library(ggplot2)
 
-# Load twitter authorization
-secrets <- fromJSON(file='twitter_secrets.json.nogit')
+runOnline = F
 
-setup_twitter_oauth(secrets$api_key,
-                    secrets$api_secret,
-                    secrets$access_token,
-                    secrets$access_token_secret)
+# Load twitter authorization
+
+
+if(runOnline){
+    secrets <- fromJSON(file='twitter_secrets.json.nogit')
+    
+    setup_twitter_oauth(secrets$api_key,
+                        secrets$api_secret,
+                        secrets$access_token,
+                        secrets$access_token_secret)
+}
 
 # Grab tweets
 getTweets <- function(searchString, numTweets){
     
-    st <- searchTwitter(searchString, n=numTweets, resultType = 'recent', lang = 'en')
+    if(runOnline){
+        st <- searchTwitter(searchString, n=numTweets, resultType = 'recent', lang = 'en')
+        
+        statuses <- data.frame(text=sapply(st, function(x) x$getText()),
+                               user=sapply(st, function(x) x$getScreenName()),
+                               RT=sapply(st, function(x) x$isRetweet),
+                               latitude=sapply(st, function(x) as.numeric(x$latitude[1])),
+                               longitude=sapply(st, function(x) as.numeric(x$longitude[1])),
+                               time=sapply(st, function(x) format(x$created, format='%F %T'))
+        )
+        
+        statuses <-
+            statuses %>%
+            filter(!RT)
+    }
     
-    statuses <- data.frame(text=sapply(st, function(x) x$getText()),
-                           user=sapply(st, function(x) x$getScreenName()),
-                           RT=sapply(st, function(x) x$isRetweet),
-                           latitude=sapply(st, function(x) as.numeric(x$latitude[1])),
-                           longitude=sapply(st, function(x) as.numeric(x$longitude[1])),
-                           time=sapply(st, function(x) format(x$created, format='%F %T'))
-    )
+    if(!runOnline){
+        files <- list.files('data','tweets_')
+        searchstring <- 'politics'
+        for(i in 1:length(files)) {
+            selectedfile <- '/Users/strakul/software/r/shiny_twitter/data/tweets_politics_3970_2016-02-28.Rda'
+            statuses <- readRDS(file=selectedfile)
+        }
+    }
     
-    statuses <-
-        statuses %>%
-        filter(!RT)
     
     return(statuses)
 }
