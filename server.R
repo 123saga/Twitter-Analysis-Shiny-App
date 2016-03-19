@@ -25,12 +25,7 @@ function(input, output, session) {
         # Change when the "update" button is pressed...
         input$update
         # ...but not for anything else
-        #isolate({
-            #withProgress({
-                #setProgress(message = "Processing tweets...")
-                getTextData(statuses())
-            #})
-        #})
+        getTextData(statuses())
     })
     
     sentiments <- reactive({
@@ -83,7 +78,7 @@ function(input, output, session) {
     })
     
     output$pcaplot <- renderPlot({
-        df <- runpca()
+        df <- runpca()[1]$statuses
 
         ggplot(df, aes_string(x=input$xvar, y=input$yvar)) + 
             geom_point(aes_string(fill=input$colvar), size=4, alpha=0.7, pch=21, stroke=1.3) + 
@@ -92,7 +87,7 @@ function(input, output, session) {
     })
     
     output$tweet_table <- DT::renderDataTable({
-        df <- runpca()
+        df <- runpca()[1]$statuses
         text <- df$text
         pc <- df[,input$pc]
         
@@ -104,5 +99,39 @@ function(input, output, session) {
             filter(!is.na(pc_val))
         
         DT::datatable(temp)
+    })
+    
+    output$loadingFactors <- renderText({
+        df <- runpca()[2]$pca
+        
+        # Additional PCA checks
+        loads <- data.frame(df$rotation^2)
+        temp <- data.frame('term'=rownames(loads))
+        loads <- cbind(temp, loads)
+        loads <- loads[,c("term",input$pc)]
+        colnames(loads) <- c("term","PC")
+        loads <-
+            loads %>%
+            arrange(desc(PC)) %>%
+            select(term) %>%
+            head(10)
+        loads <- paste(loads$term, collapse=', ')
+        
+        paste("Most prominent terms: ", loads)
+    })
+    
+    output$timeplot <- renderPlot({
+        df <- runpca()[1]$statuses
+        df <-
+            df %>%
+            mutate(time = as.POSIXct(time, format='%F %T')) %>%
+            arrange(time)
+        
+        ggplot(df, aes_string(x='time', y=input$yvar_time)) + 
+            geom_line(col='darkblue', alpha=0.8) +
+            scale_x_datetime(labels = date_format('%F %H:%M:%S'),
+                             breaks = date_breaks("5 min")) +
+            labs(x='Date') + theme_bw() +
+            theme(axis.text.x = element_text(angle=90))
     })
 }

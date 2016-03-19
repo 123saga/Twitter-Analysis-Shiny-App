@@ -11,6 +11,9 @@ pcalist <- c('PC1','PC2','PC3','PC4','PC5')
 numChoices <- c(1000, 2000, 3000, 4000, 5000)
 colChoices <- c('positivity','anger','anticipation','disgust','fear','joy',
                 'sadness','surprise','trust')
+allChoices <- c('PC1','PC2','PC3','PC4','PC5',
+                'positivity','anger','anticipation','disgust','fear','joy',
+                'sadness','surprise','trust')
 
 shinyUI(
     navbarPage("Twitter Analysis",
@@ -53,7 +56,16 @@ shinyUI(
                             sidebarPanel(
                                 selectInput('pc','Component to Consider:', pcalist)
                             ),
-                            mainPanel(DT::dataTableOutput('tweet_table'))
+                            mainPanel(DT::dataTableOutput('tweet_table'),
+                                      verbatimTextOutput("loadingFactors"))
+                        )),
+               tabPanel("Time Graph",
+                        fluidPage(
+                            sidebarPanel(
+                                selectInput('yvar_time','Y Variable',allChoices,
+                                            selected = allChoices[2])
+                            ),
+                            mainPanel(plotOutput("timeplot"))
                         ))
     )
 )

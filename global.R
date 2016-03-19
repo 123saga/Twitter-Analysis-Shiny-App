@@ -6,12 +6,12 @@ library(rjson)
 library(wordcloud)
 library(dplyr)
 library(caret)
-#library(knitr)
 library(RColorBrewer)
 library(stringr)
 library(syuzhet) # for sentiment analysis
-library(memoise)
+#library(memoise)
 library(ggplot2)
+library(scales)
 
 runOnline = F
 
@@ -98,20 +98,23 @@ doPCA <- function(textdata, statuses, sentiments){
     
     words <-
         words %>%
+        mutate(freq = count/nrow(statuses)) %>%
         arrange(desc(count))
     
     tweets <- as.data.frame(dtm)
     ind <- data.frame('id'=seq.int(nrow(tweets)))
     tweets <- cbind(ind, tweets)
     
-    words_100 <- as.character(words[2:101,'term'])
+    # Eliminate very common terms (like the search term)
+    numToCut <- max(1, sum(words$freq>0.9))
+    words_100 <- as.character(words[1+numToCut:100+numToCut,'term'])
     tweets <- tweets[,c('id',words_100)]
     
     trans <- preProcess(tweets[,2:ncol(tweets)], method=c("pca"), thresh = 0.95)
     pca <- predict(trans, tweets[,2:ncol(tweets)])
     statuses <- cbind(statuses, pca[,1:5], sentiments)
     
-    return(statuses)
+    return(list("statuses"=statuses, "pca"=trans))
 }
 
 
