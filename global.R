@@ -12,6 +12,8 @@ library(stringr)
 library(syuzhet) # for sentiment analysis
 library(scales)
 library(rbokeh)
+library(base64enc) # fix for twitter oauth in shinyapps.io
+library(SnowballC) # fix for stemming issue in tm
 
 runOnline = T
 
@@ -78,7 +80,8 @@ getTextData <- function(statuses) {
         textdata %>%
         tm_map(removeWords, stopwords("english"), mc.cores=1) %>%
         tm_map(removePunctuation, mc.cores=1) %>%
-        tm_map(content_transformer(function(x) iconv(x, to='UTF-8-MAC', sub='byte')),
+        tm_map(content_transformer(function(x) iconv(x, from='ASCII', 
+                                                     to='UTF-8', sub='byte')),
                mc.cores=1) %>%
         tm_map(content_transformer(tolower), mc.cores=1) %>%
         tm_map(content_transformer(function(x) str_replace_all(x, "@\\w+", "")), 

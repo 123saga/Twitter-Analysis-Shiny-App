@@ -93,8 +93,8 @@ function(input, output, session) {
         # Ensure tweets and user name are encoded properly to work with Bokeh
         df <-
             df %>%
-            mutate(text = iconv(text, to='UTF-8-MAC', sub='byte'),
-                   user = iconv(user, to='UTF-8-MAC', sub='byte'))
+            mutate(text = iconv(text, from='ASCII', to='UTF-8', sub='byte'),
+                   user = iconv(user, from='ASCII', to='UTF-8', sub='byte'))
 
         # Old plotting style, requires using renderPlot
 #         ggplot(df, aes_string(x=input$xvar, y=input$yvar)) + 
@@ -116,7 +116,7 @@ function(input, output, session) {
         temp <- data.frame(text=text, pc=pc, pc_val=cuts)
         temp <- temp %>%
             group_by(pc_val) %>%
-            summarise(text=iconv(sample(text,1), to='UTF-8-MAC', sub='byte')) %>%
+            summarise(text=iconv(sample(text,1), from='ASCII', to='UTF-8', sub='byte')) %>%
             filter(!is.na(pc_val))
         
         DT::datatable(temp)
@@ -146,8 +146,8 @@ function(input, output, session) {
         df <-
             df %>%
             mutate(time = as.POSIXct(time, format='%F %T')) %>%
-            mutate(text = iconv(text, to='UTF-8-MAC', sub='byte'),
-                   user = iconv(user, to='UTF-8-MAC', sub='byte')) %>%
+            mutate(text = iconv(text, from='ASCII', to='UTF-8', sub='byte'),
+                   user = iconv(user, from='ASCII', to='UTF-8', sub='byte')) %>%
             arrange(time)
         
 #         ggplot(df, aes_string(x='time', y=input$yvar_time)) + 
