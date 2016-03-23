@@ -25,9 +25,11 @@ shinyUI(
                                     # Text box
                                     textInput("searchString",
                                               "Search Twitter for:",
-                                              "Microsoft"),
+                                              "pyastro16"),
                                     selectInput("numTweets", "Number of Tweets:",
                                                 choices = numChoices),
+                                    checkboxInput("rt_remove", "Eliminate Retweets",
+                                                  value=T),
                                     actionButton("update", "Search")
                                 ),
                                 mainPanel(plotOutput("plot"),
@@ -49,7 +51,8 @@ shinyUI(
                                             selected=pcalist[2]),
                                 selectInput('colvar','Color',colChoices, selected=colChoices[1])
                             ),
-                            mainPanel(plotOutput("pcaplot"))
+                            #mainPanel(plotOutput("pcaplot"))
+                            mainPanel(rbokehOutput("pcaplot"))
                         )),
                tabPanel("Sample Tweets",
                         fluidPage(

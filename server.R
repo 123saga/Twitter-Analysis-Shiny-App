@@ -16,7 +16,7 @@ function(input, output, session) {
         isolate({
             withProgress({
                 setProgress(message = "Gathering tweets...")
-                getTweets(input$searchString, input$numTweets)
+                getTweets(input$searchString, input$numTweets, input$rt_remove)
             })
         })
     })
@@ -77,13 +77,27 @@ function(input, output, session) {
             theme_bw() + theme(legend.position='none')
     })
     
-    output$pcaplot <- renderPlot({
+    output$pcaplot <- renderRbokeh({
         df <- runpca()[1]$statuses
 
-        ggplot(df, aes_string(x=input$xvar, y=input$yvar)) + 
-            geom_point(aes_string(fill=input$colvar), size=4, alpha=0.7, pch=21, stroke=1.3) + 
-            scale_fill_gradientn(colours = brewer.pal(10,"RdBu")) + theme_bw()
+        # Ensure tweets and user name are encoded properly to work with Bokeh
+        df <-
+            df %>%
+            mutate(text = iconv(text, to='UTF-8-MAC', sub='byte'),
+                   user = iconv(user, to='UTF-8-MAC', sub='byte'))
+
+        # Old plotting style, requires using renderPlot
+#         ggplot(df, aes_string(x=input$xvar, y=input$yvar)) + 
+#             geom_point(aes_string(fill=input$colvar), size=4, alpha=0.7, pch=21, stroke=1.3) + 
+#             scale_fill_gradientn(colours = brewer.pal(10,"RdBu")) + theme_bw()
         
+        figure(logo=NULL,tools = c("pan", "wheel_zoom", "box_zoom", "resize", 
+                                   "reset", "save")) %>%
+             ly_points(input$xvar, input$yvar, data=df, hover=list(user, text)) 
+        
+#         df <- data_frame(x=1:10, y=1:10, c=rep('word #py abla http://',10))
+#         figure() %>%
+#             ly_points(x, y, data=df, hover=list(c))
     })
     
     output$tweet_table <- DT::renderDataTable({

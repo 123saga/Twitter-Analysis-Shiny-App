@@ -6,18 +6,16 @@ library(rjson)
 library(wordcloud)
 library(dplyr)
 library(caret)
+library(ggplot2)
 library(RColorBrewer)
 library(stringr)
 library(syuzhet) # for sentiment analysis
-#library(memoise)
-library(ggplot2)
 library(scales)
+library(rbokeh)
 
-runOnline = F
+runOnline = T
 
 # Load twitter authorization
-
-
 if(runOnline){
     secrets <- fromJSON(file='twitter_secrets.json.nogit')
     
@@ -28,7 +26,7 @@ if(runOnline){
 }
 
 # Grab tweets
-getTweets <- function(searchString, numTweets){
+getTweets <- function(searchString, numTweets, rt_remove){
     
     if(runOnline){
         st <- searchTwitter(searchString, n=numTweets, resultType = 'recent', lang = 'en')
@@ -40,10 +38,6 @@ getTweets <- function(searchString, numTweets){
                                longitude=sapply(st, function(x) as.numeric(x$longitude[1])),
                                time=sapply(st, function(x) format(x$created, format='%F %T'))
         )
-        
-        statuses <-
-            statuses %>%
-            filter(!RT)
     }
     
     if(!runOnline){
@@ -53,6 +47,13 @@ getTweets <- function(searchString, numTweets){
             selectedfile <- '/Users/strakul/software/r/shiny_twitter/data/tweets_politics_3970_2016-02-28.Rda'
             statuses <- readRDS(file=selectedfile)
         }
+    }
+    
+    if(rt_remove){
+        print('Removing Retweets')
+        statuses <-
+            statuses %>%
+            filter(!RT)
     }
     
     
