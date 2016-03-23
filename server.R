@@ -16,7 +16,8 @@ function(input, output, session) {
         isolate({
             withProgress({
                 setProgress(message = "Gathering tweets...")
-                getTweets(input$searchString, input$numTweets, input$rt_remove)
+                getTweets(input$searchString, input$numTweets, 
+                          input$rt_remove, input$isUser)
             })
         })
     })
@@ -63,7 +64,16 @@ function(input, output, session) {
     })
     
     output$tweetCount  <- renderText({
-        paste("Number of Tweets Found: ", as.character(nrow(statuses())))
+        df <- statuses()
+        if(input$isUser){
+            paste("Number of Tweets Found: ", as.character(nrow(statuses())),
+                  "\nUser: ",as.character(df$user[1]),
+                  "\nDescription: ",as.character(getUser(df$user[1])$description)
+                  )
+        }else{
+            paste("Number of Tweets Found: ", as.character(nrow(df)))
+        }
+        
     })
     
     output$sentiment <- renderPlot({

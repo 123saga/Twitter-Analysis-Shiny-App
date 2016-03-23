@@ -26,9 +26,9 @@ if(runOnline){
 }
 
 # Grab tweets
-getTweets <- function(searchString, numTweets, rt_remove){
+getTweets <- function(searchString, numTweets, rt_remove, isUser){
     
-    if(runOnline){
+    if(runOnline & !isUser){
         st <- searchTwitter(searchString, n=numTweets, resultType = 'recent', lang = 'en')
         
         statuses <- data.frame(text=sapply(st, function(x) x$getText()),
@@ -36,6 +36,16 @@ getTweets <- function(searchString, numTweets, rt_remove){
                                RT=sapply(st, function(x) x$isRetweet),
                                latitude=sapply(st, function(x) as.numeric(x$latitude[1])),
                                longitude=sapply(st, function(x) as.numeric(x$longitude[1])),
+                               time=sapply(st, function(x) format(x$created, format='%F %T'))
+        )
+    }
+    
+    if(isUser){
+        if(numTweets > 3200){numTweets<-3200}
+        st <- userTimeline(searchString, n=numTweets, includeRts=!rt_remove)
+        statuses <- data.frame(text=sapply(st, function(x) x$getText()),
+                               user=sapply(st, function(x) x$getScreenName()),
+                               RT=sapply(st, function(x) x$isRetweet),
                                time=sapply(st, function(x) format(x$created, format='%F %T'))
         )
     }

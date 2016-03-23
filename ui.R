@@ -30,6 +30,8 @@ shinyUI(
                                                 choices = numChoices),
                                     checkboxInput("rt_remove", "Eliminate Retweets",
                                                   value=T),
+                                    checkboxInput("isUser", "Search is a Screen Name",
+                                                  value=F),
                                     actionButton("update", "Search")
                                 ),
                                 mainPanel(plotOutput("plot"),
