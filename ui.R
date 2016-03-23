@@ -45,14 +45,20 @@ shinyUI(
                tabPanel("PCA",
                         fluidPage(
                             titlePanel("Principal Component Analysis"),
-                            sidebarPanel(
-                                selectInput('xvar', 'X Variable', pcalist),
-                                selectInput('yvar', 'Y Variable', pcalist,
-                                            selected=pcalist[2]),
-                                selectInput('colvar','Color',colChoices, selected=colChoices[1])
-                            ),
-                            #mainPanel(plotOutput("pcaplot"))
-                            mainPanel(rbokehOutput("pcaplot"))
+                            #mainPanel(plotOutput("pcaplot")),
+                            rbokehOutput("pcaplot", width='800px'),
+                            
+                            hr(),
+                            
+                            fluidRow(
+                                column(3,
+                                    selectInput('xvar', 'X Variable', allChoices)
+                                ),
+                                column(3,
+                                       selectInput('yvar', 'Y Variable', allChoices,
+                                                   selected=pcalist[2])
+                                       )
+                            )
                         )),
                tabPanel("Sample Tweets",
                         fluidPage(
@@ -64,11 +70,13 @@ shinyUI(
                         )),
                tabPanel("Time Graph",
                         fluidPage(
-                            sidebarPanel(
+                            titlePanel("Time Graph"),
+                            mainPanel(rbokehOutput("timeplot"), width='800px'),
+                            #mainPanel(plotOutput("timeplot")),
+                            fluidRow(
                                 selectInput('yvar_time','Y Variable',allChoices,
                                             selected = allChoices[2])
-                            ),
-                            mainPanel(plotOutput("timeplot"))
+                            )
                         ))
     )
 )

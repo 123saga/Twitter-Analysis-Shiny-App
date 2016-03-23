@@ -92,12 +92,9 @@ function(input, output, session) {
 #             scale_fill_gradientn(colours = brewer.pal(10,"RdBu")) + theme_bw()
         
         figure(logo=NULL,tools = c("pan", "wheel_zoom", "box_zoom", "resize", 
-                                   "reset", "save")) %>%
-             ly_points(input$xvar, input$yvar, data=df, hover=list(user, text)) 
-        
-#         df <- data_frame(x=1:10, y=1:10, c=rep('word #py abla http://',10))
-#         figure() %>%
-#             ly_points(x, y, data=df, hover=list(c))
+                                   "reset", "save"), legend_location = NULL) %>%
+             ly_points(input$xvar, input$yvar, data=df, 
+                       hover=list(user, text)) 
     })
     
     output$tweet_table <- DT::renderDataTable({
@@ -134,18 +131,25 @@ function(input, output, session) {
         paste("Most prominent terms: ", loads)
     })
     
-    output$timeplot <- renderPlot({
+    output$timeplot <- renderRbokeh({
         df <- runpca()[1]$statuses
         df <-
             df %>%
             mutate(time = as.POSIXct(time, format='%F %T')) %>%
+            mutate(text = iconv(text, to='UTF-8-MAC', sub='byte'),
+                   user = iconv(user, to='UTF-8-MAC', sub='byte')) %>%
             arrange(time)
         
-        ggplot(df, aes_string(x='time', y=input$yvar_time)) + 
-            geom_line(col='darkblue', alpha=0.8) +
-            scale_x_datetime(labels = date_format('%F %H:%M:%S'),
-                             breaks = date_breaks("5 min")) +
-            labs(x='Date') + theme_bw() +
-            theme(axis.text.x = element_text(angle=90))
+#         ggplot(df, aes_string(x='time', y=input$yvar_time)) + 
+#             geom_line(col='darkblue', alpha=0.8) +
+#             scale_x_datetime(labels = date_format('%F %H:%M:%S')) +
+#             labs(x='Date') + theme_bw() +
+#             theme(axis.text.x = element_text(angle=90))
+        
+        figure(logo=NULL,tools = c("pan", "wheel_zoom", "box_zoom", "resize", 
+                                   "reset", "save")) %>%
+            ly_points(time, input$yvar_time, data=df, 
+                      hover=list(user, text)) %>%
+            x_axis(label='Date')
     })
 }
