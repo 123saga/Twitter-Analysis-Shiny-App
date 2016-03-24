@@ -101,8 +101,9 @@ function(input, output, session) {
 #             geom_point(aes_string(fill=input$colvar), size=4, alpha=0.7, pch=21, stroke=1.3) + 
 #             scale_fill_gradientn(colours = brewer.pal(10,"RdBu")) + theme_bw()
         
-        figure(logo=NULL,tools = c("pan", "wheel_zoom", "box_zoom", "resize", 
-                                   "reset", "save"), legend_location = NULL) %>%
+        figure(lod_threshold = 100, logo=NULL, 
+               tools = c("pan", "wheel_zoom", "box_zoom", "resize", "reset", "save"), 
+               legend_location = NULL) %>%
              ly_points(input$xvar, input$yvar, data=df, 
                        hover=list(user, text)) 
     })
@@ -156,8 +157,9 @@ function(input, output, session) {
 #             labs(x='Date') + theme_bw() +
 #             theme(axis.text.x = element_text(angle=90))
         
-        figure(logo=NULL,tools = c("pan", "wheel_zoom", "box_zoom", "resize", 
-                                   "reset", "save")) %>%
+        figure(lod_threshold = 100, logo=NULL, 
+               tools = c("pan", "wheel_zoom", "box_zoom", "resize", 
+                         "reset", "save")) %>%
             ly_points(time, input$yvar_time, data=df, 
                       hover=list(user, text)) %>%
             x_axis(label='Date')
