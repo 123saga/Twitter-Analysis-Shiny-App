@@ -48,7 +48,7 @@ shinyUI(
                         fluidPage(
                             titlePanel("Principal Component Analysis"),
                             #mainPanel(plotOutput("pcaplot")),
-                            rbokehOutput("pcaplot", width='800px'),
+                            rbokehOutput("pcaplot"),
                             
                             hr(),
                             
@@ -73,7 +73,7 @@ shinyUI(
                tabPanel("Time Graph",
                         fluidPage(
                             titlePanel("Time Graph"),
-                            mainPanel(rbokehOutput("timeplot"), width='800px'),
+                            mainPanel(rbokehOutput("timeplot")),
                             #mainPanel(plotOutput("timeplot")),
                             fluidRow(
                                 selectInput('yvar_time','Y Variable',allChoices,
